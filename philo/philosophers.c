@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/14 15:57:18 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/03/15 16:34:07 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,30 +45,33 @@ void	init_others(t_philo **philos)
 	i = 0;
 	while (++i < philos[0]->n_phil)
 	{
-		(*philos)->n_phil = philos[0]->n_phil;
-		(*philos)->die = philos[0]->die;
-		(*philos)->eat = philos[0]->eat;
-		(*philos)->sleep = philos[0]->sleep;
-		(*philos)->to_eat = philos[0]->to_eat;
+		(*philos)[i].n_phil = philos[0]->n_phil;
+		(*philos)[i].die = philos[0]->die;
+		(*philos)[i].eat = philos[0]->eat;
+		(*philos)[i].sleep = philos[0]->sleep;
+		(*philos)[i].to_eat = philos[0]->to_eat;
+		gettimeofday(&(*philos)[i].created_at, NULL);
 	}
 }
 
 void	init_philo(int argc, char **argv, t_philo **philos)
 {
 	if (argc < 5 || argc > 6)
-		return (free(*philos), exit(1));
+		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
+	if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
+		|| ft_atoi(argv[4]) < 0)
+		return (printf("ERROR: Invalid argument\n"), exit(2));
+	*philos = malloc(ft_atoi(argv[1]) * sizeof(t_philo));
 	(*philos)->n_phil = ft_atoi(argv[1]);
 	(*philos)->die = ft_atoi(argv[2]);
 	(*philos)->eat = ft_atoi(argv[3]);
 	(*philos)->sleep = ft_atoi(argv[4]);
-	if ((*philos)->n_phil < 1 || (*philos)->die < 0 || (*philos)->eat < 0
-		|| (*philos)->sleep < 0)
-		return (free(*philos), exit(2));
+	gettimeofday(&(*philos)->created_at, NULL);
 	if (argc == 6)
 	{
 		(*philos)->to_eat = ft_atoi(argv[5]);
 		if ((*philos)->to_eat < 0)
-			return (free(*philos), exit(2));
+			return (free(*philos), printf("ERROR: Invalid argument\n"), exit(2));
 	}
 	else
 		(*philos)->to_eat = -1;
@@ -77,10 +80,18 @@ void	init_philo(int argc, char **argv, t_philo **philos)
 
 void	*thread_routine(void *data)
 {
-	int	*i;
+	struct s_philo	*philo;
+	struct timeval	timenow;
 
-	i = (int *) data;
-	printf("HELLO from %d\n", *i);
+	philo = (struct s_philo *) data;
+	gettimeofday(&timenow, NULL);
+	printf("%lld %d is eating\n", timesince(philo->created_at, timenow), philo->id);
+	milisleep(philo->eat);
+	gettimeofday(&timenow, NULL);
+	printf("%lld %d is sleeping\n", timesince(philo->created_at, timenow), philo->id);
+	milisleep(philo->sleep);
+	gettimeofday(&timenow, NULL);
+	printf("%lld %d is thinking\n", timesince(philo->created_at, timenow), philo->id);
 	pthread_exit (NULL);
 }
 
@@ -89,21 +100,19 @@ int	main(int argc, char **argv)
 	int			n;
 	t_philo		*philos;
 
-	philos = malloc(5 * sizeof(t_philo));
 	init_philo(argc, argv, &philos);
 	n = -1;
-	while (++n < 5)
+	while (++n < philos[0].n_phil)
 	{
-		philos->id = n;
+		philos[n].id = n + 1;
 		pthread_mutex_init(&philos[n].mutex, NULL);
-		pthread_create(&philos[n].thread, NULL, thread_routine, &n);
+		pthread_create(&philos[n].thread, NULL, thread_routine, &philos[n]);
 	}
 	n = -1;
-	while (++n < 5)
+	while (++n < philos[0].n_phil)
 		pthread_join(philos[n].thread, NULL);
 	n = -1;
-	while (++n < 5)
+	while (++n < philos[0].n_phil)
 		pthread_mutex_destroy(&philos[n].mutex);
-	free(philos);
-	return (0);
+	return (free(philos), 0);
 }

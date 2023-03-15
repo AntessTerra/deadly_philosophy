@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:56:44 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/14 15:42:25 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/03/15 16:21:47 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,12 @@ typedef struct s_philo
 	int				sleep;
 	int				to_eat;
 	int				n_phil;
+	struct timeval	created_at;
 	pthread_t		thread;
 	pthread_mutex_t	mutex;
 }				t_philo;
+
+long long	timesince(struct timeval then, struct timeval now);
+void		milisleep(int microsec);
 
 #endif
