@@ -6,76 +6,51 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/15 16:34:07 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/03/17 17:41:14 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-int	ft_atoi(const char *nptr)
+void	alone(t_philo **philo)
 {
-	size_t	i;
-	int		sign;
-	int		base;
+	milisleep((*philo)->sleep);
+	printf("%-5d %-5s %-5s\n", (*philo)->sleep, "1", "\e[0;31mhas died\e[0m");
+	free(*philo);
+	exit(0);
+}
 
-	i = 0;
-	sign = 1;
-	base = 0;
-	if (nptr[i] == '\0')
+void	odd_sleep(t_philo **philo)
+{
+	struct timeval	timenow;
+
+	if ((*philo)->id % 2 == 0 && (*philo)->init_sleep)
+	{
+		gettimeofday(&timenow, NULL);
+		printf("%-5lld %-5d \e[0;96m is sleeping \e[0m\n",
+			timesince((*philo)->created_at, timenow), (*philo)->id);
+		milisleep((*philo)->sleep);
+		(*philo)->init_sleep = 0;
+	}
+}
+
+int	is_alive(t_philo **philo)
+{
+	struct timeval	timenow;
+	int				id;
+
+	id = (*philo)->id;
+	gettimeofday(&timenow, NULL);
+	if (!(*philo)->alive)
 		return (0);
-	while (nptr[i] <= ' ' && nptr[i] != '\e')
-		i++;
-	if (nptr[i] == '-' || nptr[i] == '+')
+	if (timesince((*philo)->ate_last, timenow) >= (*philo)->die)
 	{
-		if (nptr[i] == '-')
-			sign = sign * -1;
-		i++;
+		printf("%-5lld %-5d \e[0;31m has died \e[0m\n",
+			timesince((*philo)->ate_last, timenow), (*philo)->id);
+		(*philo)->alive = 0;
+		return (0);
 	}
-	while (nptr[i] >= '0' && nptr[i] <= '9')
-		base = 10 * base + (nptr[i++] - '0');
-	if ((nptr[i] < '0' || nptr[i] > '9') && nptr[i] != '\0')
-		return (-1);
-	return (base * sign);
-}
-
-void	init_others(t_philo **philos)
-{
-	int	i;
-
-	i = 0;
-	while (++i < philos[0]->n_phil)
-	{
-		(*philos)[i].n_phil = philos[0]->n_phil;
-		(*philos)[i].die = philos[0]->die;
-		(*philos)[i].eat = philos[0]->eat;
-		(*philos)[i].sleep = philos[0]->sleep;
-		(*philos)[i].to_eat = philos[0]->to_eat;
-		gettimeofday(&(*philos)[i].created_at, NULL);
-	}
-}
-
-void	init_philo(int argc, char **argv, t_philo **philos)
-{
-	if (argc < 5 || argc > 6)
-		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
-	if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
-		|| ft_atoi(argv[4]) < 0)
-		return (printf("ERROR: Invalid argument\n"), exit(2));
-	*philos = malloc(ft_atoi(argv[1]) * sizeof(t_philo));
-	(*philos)->n_phil = ft_atoi(argv[1]);
-	(*philos)->die = ft_atoi(argv[2]);
-	(*philos)->eat = ft_atoi(argv[3]);
-	(*philos)->sleep = ft_atoi(argv[4]);
-	gettimeofday(&(*philos)->created_at, NULL);
-	if (argc == 6)
-	{
-		(*philos)->to_eat = ft_atoi(argv[5]);
-		if ((*philos)->to_eat < 0)
-			return (free(*philos), printf("ERROR: Invalid argument\n"), exit(2));
-	}
-	else
-		(*philos)->to_eat = -1;
-	init_others(philos);
+	return (1);
 }
 
 void	*thread_routine(void *data)
@@ -84,23 +59,31 @@ void	*thread_routine(void *data)
 	struct timeval	timenow;
 
 	philo = (struct s_philo *) data;
-	gettimeofday(&timenow, NULL);
-	printf("%lld %d is eating\n", timesince(philo->created_at, timenow), philo->id);
-	milisleep(philo->eat);
-	gettimeofday(&timenow, NULL);
-	printf("%lld %d is sleeping\n", timesince(philo->created_at, timenow), philo->id);
-	milisleep(philo->sleep);
-	gettimeofday(&timenow, NULL);
-	printf("%lld %d is thinking\n", timesince(philo->created_at, timenow), philo->id);
-	pthread_exit (NULL);
+	gettimeofday(&(*philo).ate_last, NULL);
+	while (philo->alive)
+	{
+		odd_sleep(&philo);
+		if (!is_alive(&philo))
+			return (NULL);
+		do_sleep(&philo);
+		if (!is_alive(&philo))
+			return (NULL);
+		do_think(&philo);
+		if (!is_alive(&philo))
+			return (NULL);
+	}
+	return (NULL);
 }
 
 int	main(int argc, char **argv)
 {
 	int			n;
+	int			*forks;
 	t_philo		*philos;
 
-	init_philo(argc, argv, &philos);
+	init_philo(argc, argv, &philos, &forks);
+	if (philos[0].n_phil == 1)
+		alone(&philos);
 	n = -1;
 	while (++n < philos[0].n_phil)
 	{
@@ -114,5 +97,5 @@ int	main(int argc, char **argv)
 	n = -1;
 	while (++n < philos[0].n_phil)
 		pthread_mutex_destroy(&philos[n].mutex);
-	return (free(philos), 0);
+	return (free(philos), free(forks), 0);
 }
