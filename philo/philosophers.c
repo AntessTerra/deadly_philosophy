@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/17 17:41:14 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/03/19 16:50:46 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,11 +65,13 @@ void	*thread_routine(void *data)
 		odd_sleep(&philo);
 		if (!is_alive(&philo))
 			return (NULL);
+		do_eat(&philo);
+		gettimeofday(&(*philo).ate_last, NULL);
 		do_sleep(&philo);
 		if (!is_alive(&philo))
 			return (NULL);
 		do_think(&philo);
-		if (!is_alive(&philo))
+		if (!is_alive(&philo) || philo->n_ate == philo->to_eat)
 			return (NULL);
 	}
 	return (NULL);
@@ -88,7 +90,7 @@ int	main(int argc, char **argv)
 	while (++n < philos[0].n_phil)
 	{
 		philos[n].id = n + 1;
-		pthread_mutex_init(&philos[n].mutex, NULL);
+		pthread_mutex_init(&philos[n].mutexes[n], NULL);
 		pthread_create(&philos[n].thread, NULL, thread_routine, &philos[n]);
 	}
 	n = -1;
@@ -96,6 +98,6 @@ int	main(int argc, char **argv)
 		pthread_join(philos[n].thread, NULL);
 	n = -1;
 	while (++n < philos[0].n_phil)
-		pthread_mutex_destroy(&philos[n].mutex);
-	return (free(philos), free(forks), 0);
+		pthread_mutex_destroy(&philos[n].mutexes[n]);
+	return (free(philos->mutexes), free(philos), free(forks), 0);
 }

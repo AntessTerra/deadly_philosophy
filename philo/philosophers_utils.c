@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:46:22 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/17 17:40:52 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/03/19 16:50:42 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,15 @@ int	ft_atoi(const char *nptr)
 	return (base * sign);
 }
 
-void	init_others(t_philo **philos, int **forks)
+void	init_others(t_philo **philos, int **forks, pthread_mutex_t	**mutexes)
 {
 	int	i;
 
 	i = 0;
+	(*forks)[0] = 1;
+	(*philos)[0].n_ate = 0;
+	(*philos)[0].alive = 1;
+	(*philos)[0].init_sleep = 1;
 	while (++i < philos[0]->n_phil)
 	{
 		(*philos)[i].n_phil = philos[0]->n_phil;
@@ -67,29 +71,33 @@ void	init_others(t_philo **philos, int **forks)
 		(*philos)[i].to_eat = philos[0]->to_eat;
 		(*philos)[i].alive = 1;
 		(*philos)[i].init_sleep = 1;
+		(*philos)->n_ate = 0;
 		(*forks)[i] = 1;
-		(*philos)[i].forks = forks;
+		(*philos)[i].forks = *forks;
+		(*philos)[i].mutexes = *mutexes;
 		gettimeofday(&(*philos)[i].created_at, NULL);
 	}
 }
 
 void	init_philo(int argc, char **argv, t_philo **philos, int **forks)
 {
+	pthread_mutex_t	*mutexes;
+
 	if (argc < 5 || argc > 6)
 		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
 	if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
 		|| ft_atoi(argv[4]) < 0)
 		return (printf("ERROR: Invalid argument\n"), exit(2));
-	*philos = malloc((ft_atoi(argv[1]) * sizeof(t_philo)) + ft_atoi(argv[1]) * sizeof(int));
+	*philos = malloc((ft_atoi(argv[1]) * sizeof(t_philo))
+			+ ft_atoi(argv[1]) * sizeof(int) + ft_atoi(argv[1]) * sizeof(pthread_mutex_t));
 	*forks = malloc(ft_atoi(argv[1]) * sizeof(int));
+	mutexes = malloc(ft_atoi(argv[1]) * sizeof(pthread_mutex_t));
+	(*philos)->mutexes = mutexes;
 	(*philos)->n_phil = ft_atoi(argv[1]);
 	(*philos)->die = ft_atoi(argv[2]);
 	(*philos)->eat = ft_atoi(argv[3]);
 	(*philos)->sleep = ft_atoi(argv[4]);
-	(*philos)->alive = 1;
-	(*philos)->init_sleep = 1;
-	(*forks)[0] = 1;
-	(*philos)->forks = forks;
+	(*philos)->forks = *forks;
 	gettimeofday(&(*philos)->created_at, NULL);
 	if (argc == 6)
 	{
@@ -99,5 +107,5 @@ void	init_philo(int argc, char **argv, t_philo **philos, int **forks)
 	}
 	else
 		(*philos)->to_eat = -1;
-	init_others(philos, forks);
+	init_others(philos, forks, &mutexes);
 }
