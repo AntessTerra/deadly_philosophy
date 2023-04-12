@@ -6,7 +6,7 @@
 #    By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/03/13 14:25:22 by jbartosi          #+#    #+#              #
-#    Updated: 2023/03/17 16:23:57 by jbartosi         ###   ########.fr        #
+#    Updated: 2023/04/11 14:56:10 by jbartosi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ CFLAGS = -Wall -Wextra -Werror
 SRC = philosophers.c philosophers_utils.c routines.c
 OBJ = $(SRC:.c=.o)
 
-all: $(NAME)
+all: $(NAME) clean
 
 %.o: %.c
 	@cc -g -c $<

@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:56:44 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/03/19 16:50:54 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/12 18:25:38 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,20 +28,23 @@ typedef struct s_philo
 	int				to_eat;
 	int				n_phil;
 	int				n_ate;
-	int				alive;
+	int				*alive;
 	int				init_sleep;
 	int				*forks;
 	struct timeval	created_at;
 	struct timeval	ate_last;
 	pthread_t		thread;
+	pthread_mutex_t	*megaphone;
 	pthread_mutex_t	*mutexes;
 }				t_philo;
 
 long long	timesince(struct timeval then, struct timeval now);
 void		milisleep(int microsec);
-void		init_philo(int argc, char **argv, t_philo **philos, int **forks);
+void		init_philo(int argc, char **argv, t_philo **philos,
+				pthread_mutex_t **mutexes);
 void		do_think(t_philo **philo);
 void		do_sleep(t_philo **philo);
 void		do_eat(t_philo **philo);
+int			is_alive(t_philo **philo);
 
 #endif
