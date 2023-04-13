@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philosophers_utils.c                               :+:      :+:    :+:   */
+/*   philosophers_b_utils.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:46:22 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:09:37 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/13 18:10:31 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers.h"
+#include "philosophers_b.h"
 
 long long	timesince(struct timeval then, struct timeval now)
 {
@@ -53,16 +53,14 @@ int	ft_atoi(const char *nptr)
 	return (base * sign);
 }
 
-void	init_others(t_philo **philos, pthread_mutex_t **mutexes, int *forks)
+void	init_others(t_philo **philos)
 {
 	int	i;
 	int	*alive;
 
-	forks = malloc((*philos)->n_phil * sizeof(int));
 	alive = malloc(1 * sizeof(int));
 	alive[0] = 1;
 	i = 0;
-	(*philos)[0].forks = forks;
 	(*philos)[0].n_ate = 0;
 	(*philos)[0].alive = alive;
 	(*philos)[0].init_sleep = 1;
@@ -76,17 +74,12 @@ void	init_others(t_philo **philos, pthread_mutex_t **mutexes, int *forks)
 		(*philos)[i].alive = alive;
 		(*philos)[i].init_sleep = 1;
 		(*philos)[i].n_ate = 0;
-		(*philos)[i].forks = forks;
-		(*philos)[i].mutexes = *mutexes;
 		gettimeofday(&(*philos)[i].created_at, NULL);
 	}
 }
 
-void	init_philo(int argc, char **argv, t_philo **philos,
-	pthread_mutex_t	**mutexes)
+void	init_philo(int argc, char **argv, t_philo **philos)
 {
-	static int	*forks;
-
 	if (argc < 5 || argc > 6)
 		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
 	if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
@@ -94,8 +87,6 @@ void	init_philo(int argc, char **argv, t_philo **philos,
 		return (printf("ERROR: Invalid argument\n"), exit(2));
 	*philos = malloc((ft_atoi(argv[1]) * sizeof(t_philo))
 			+ ft_atoi(argv[1]) * sizeof(int));
-	*mutexes = malloc(ft_atoi(argv[1]) * sizeof(pthread_mutex_t));
-	(*philos)[0].mutexes = *mutexes;
 	(*philos)[0].n_phil = ft_atoi(argv[1]);
 	(*philos)[0].die = ft_atoi(argv[2]);
 	(*philos)[0].eat = ft_atoi(argv[3]);
@@ -109,5 +100,5 @@ void	init_philo(int argc, char **argv, t_philo **philos,
 	}
 	else
 		(*philos)[0].to_eat = -1;
-	init_others(philos, mutexes, forks);
+	init_others(philos);
 }
