@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:13:42 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/14 13:50:52 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	odd_sleep(t_philo **philo)
 	{
 		gettimeofday(&timenow, NULL);
 		if ((*philo)->alive[0])
-			printf("%-5lld %-5d \e[0;96m is sleeping \e[0m\n",
+			printf("%-5lld %-5d \e[0;36m is sleeping \e[0m\n",
 				timesince((*philo)->created_at, timenow), (*philo)->id + 1);
 		milisleep((*philo)->sleep);
 		(*philo)->init_sleep = 0;
