@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philosophers_b_utils.c                             :+:      :+:    :+:   */
+/*   philosophers_utils_bonus.c                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:46:22 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:10:31 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/14 13:22:27 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers_b.h"
+#include "philosophers_bonus.h"
 
 long long	timesince(struct timeval then, struct timeval now)
 {

@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   routines_b.c                                       :+:      :+:    :+:   */
+/*   routines_bonus.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 14:16:29 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:18:01 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/14 13:22:23 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philosophers_b.h"
+#include "philosophers_bonus.h"
 
 void	odd_sleep(t_philo **philo)
 {
