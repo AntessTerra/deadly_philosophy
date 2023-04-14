@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:21:16 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/14 13:15:44 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,17 +48,17 @@ void	*processs_routine(t_philo *philo)
 	{
 		odd_sleep(&philo);
 		if (!is_alive(&philo))
-			return (NULL);
+			return (sem_close(sem), NULL);
 		do_eat(&philo, sem);
 		gettimeofday(&(*philo).ate_last, NULL);
 		do_sleep(&philo);
 		if (!is_alive(&philo))
-			return (NULL);
+			return (sem_close(sem), NULL);
 		do_think(&philo);
 		if (!is_alive(&philo) || philo->n_ate == philo->to_eat)
-			return (NULL);
+			return (sem_close(sem), NULL);
 	}
-	return (NULL);
+	return (sem_close(sem), NULL);
 }
 
 void	cutlery(t_philo *philos, int n)
