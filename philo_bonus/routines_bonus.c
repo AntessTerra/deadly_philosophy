@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/16 14:16:29 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/14 13:50:58 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/24 17:49:49 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,13 +67,14 @@ void	grab_forks(t_philo **philo, sem_t *sem)
 			timesince((*philo)->created_at, timenow), (*philo)->id + 1);
 }
 
-void	do_eat(t_philo **philo, sem_t *sem)
+int	do_eat(t_philo **philo, sem_t *sem)
 {
 	struct timeval	timenow;
 
-	if (!is_alive(philo))
-		return ((void) 0);
 	grab_forks(philo, sem);
+	if (!is_alive(philo))
+		return (0);
+	gettimeofday(&(*philo)->ate_last, NULL);
 	gettimeofday(&timenow, NULL);
 	if ((*philo)->alive[0])
 		printf("%-5lld %-5d \e[0;35m is eating \e[0m\n",
@@ -82,4 +83,5 @@ void	do_eat(t_philo **philo, sem_t *sem)
 	sem_post(sem);
 	sem_post(sem);
 	(*philo)->n_ate++;
+	return (1);
 }

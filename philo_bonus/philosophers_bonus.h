@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:56:44 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/14 13:21:45 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/24 17:50:01 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void		milisleep(int microsec);
 void		init_philo(int argc, char **argv, t_philo **philos);
 void		do_think(t_philo **philo);
 void		do_sleep(t_philo **philo);
-void		do_eat(t_philo **philo, sem_t *sem);
+int			do_eat(t_philo **philo, sem_t *sem);
 void		odd_sleep(t_philo **philo);
 int			is_alive(t_philo **philo);
 

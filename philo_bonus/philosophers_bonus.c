@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/14 13:22:30 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/24 17:50:07 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,16 +47,11 @@ void	*processs_routine(t_philo *philo)
 	while (philo->alive[0])
 	{
 		odd_sleep(&philo);
-		if (!is_alive(&philo))
-			return (sem_close(sem), NULL);
-		do_eat(&philo, sem);
-		gettimeofday(&(*philo).ate_last, NULL);
+		if (!do_eat(&philo, sem))
+			return (NULL);
+		if (philo->n_ate == philo->to_eat)
+			return (NULL);
 		do_sleep(&philo);
-		if (!is_alive(&philo))
-			return (sem_close(sem), NULL);
-		do_think(&philo);
-		if (!is_alive(&philo) || philo->n_ate == philo->to_eat)
-			return (sem_close(sem), NULL);
 	}
 	return (sem_close(sem), NULL);
 }

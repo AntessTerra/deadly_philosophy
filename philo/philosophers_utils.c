@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:46:22 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/13 18:09:37 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/24 15:01:08 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,6 @@ long long	timesince(struct timeval then, struct timeval now)
 	start = (then.tv_sec * 1000) + (then.tv_usec / 1000);
 	end = (now.tv_sec * 1000) + (now.tv_usec / 1000);
 	return (end - start);
-}
-
-void	milisleep(int microsec)
-{
-	usleep(microsec * 1000);
 }
 
 int	ft_atoi(const char *nptr)
@@ -53,10 +48,20 @@ int	ft_atoi(const char *nptr)
 	return (base * sign);
 }
 
+void	init_others_others(t_philo **philos, int i)
+{
+	(*philos)[i].n_phil = (*philos)[0].n_phil;
+	(*philos)[i].die = (*philos)[0].die;
+	(*philos)[i].eat = (*philos)[0].eat;
+	(*philos)[i].sleep = (*philos)[0].sleep;
+	(*philos)[i].to_eat = (*philos)[0].to_eat;
+}
+
 void	init_others(t_philo **philos, pthread_mutex_t **mutexes, int *forks)
 {
-	int	i;
-	int	*alive;
+	int				i;
+	int				*alive;
+	pthread_mutex_t	*megaphone;
 
 	forks = malloc((*philos)->n_phil * sizeof(int));
 	alive = malloc(1 * sizeof(int));
@@ -66,18 +71,17 @@ void	init_others(t_philo **philos, pthread_mutex_t **mutexes, int *forks)
 	(*philos)[0].n_ate = 0;
 	(*philos)[0].alive = alive;
 	(*philos)[0].init_sleep = 1;
+	megaphone = malloc(1 * sizeof(pthread_mutex_t));
+	(*philos)[0].megaphone = megaphone;
 	while (++i < (*philos)[0].n_phil)
 	{
-		(*philos)[i].n_phil = (*philos)[0].n_phil;
-		(*philos)[i].die = (*philos)[0].die;
-		(*philos)[i].eat = (*philos)[0].eat;
-		(*philos)[i].sleep = (*philos)[0].sleep;
-		(*philos)[i].to_eat = (*philos)[0].to_eat;
+		init_others_others(philos, i);
 		(*philos)[i].alive = alive;
 		(*philos)[i].init_sleep = 1;
 		(*philos)[i].n_ate = 0;
 		(*philos)[i].forks = forks;
 		(*philos)[i].mutexes = *mutexes;
+		(*philos)[i].megaphone = megaphone;
 		gettimeofday(&(*philos)[i].created_at, NULL);
 	}
 }
@@ -85,7 +89,7 @@ void	init_others(t_philo **philos, pthread_mutex_t **mutexes, int *forks)
 void	init_philo(int argc, char **argv, t_philo **philos,
 	pthread_mutex_t	**mutexes)
 {
-	static int	*forks;
+	static int		*forks;
 
 	if (argc < 5 || argc > 6)
 		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
