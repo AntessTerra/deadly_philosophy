@@ -6,22 +6,22 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/13 14:55:45 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/24 17:50:07 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/25 14:51:20 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers_bonus.h"
 
-void	alone(t_philo **philo)
+void	freeee(t_philo *philos)
 {
-	milisleep((*philo)->sleep);
-	printf("%-5d %-5s %-5s\n", (*philo)->sleep, "1", "\e[0;31mhas died\e[0m");
-	free((*philo)->alive);
-	free(*philo);
-	exit(0);
+	sem_close(philos->forks);
+	sem_close(philos->megaphone);
+	free(philos->alive);
+	free(philos->pids);
+	free(philos);
 }
 
-int	is_alive(t_philo **philo)
+int	is_alive(t_philo **philo, sem_t *megaphone)
 {
 	struct timeval	timenow;
 
@@ -30,6 +30,7 @@ int	is_alive(t_philo **philo)
 		return (0);
 	if (timesince((*philo)->ate_last, timenow) >= (*philo)->die)
 	{
+		sem_wait(megaphone);
 		(*philo)->alive[0] = 0;
 		printf("%-5lld %-5d \e[0;31m died \e[0m\n",
 			timesince((*philo)->created_at, timenow), (*philo)->id + 1);
@@ -40,54 +41,63 @@ int	is_alive(t_philo **philo)
 
 void	*processs_routine(t_philo *philo)
 {
-	sem_t	*sem;
+	sem_t	*forks;
+	sem_t	*megaphone;
 
-	sem = sem_open(SNAME, 0);
+	forks = sem_open(FORKS, 0);
+	megaphone = sem_open(MEGAPHONE, 0);
 	gettimeofday(&(*philo).ate_last, NULL);
 	while (philo->alive[0])
 	{
-		odd_sleep(&philo);
-		if (!do_eat(&philo, sem))
-			return (NULL);
+		odd_sleep(&philo, megaphone);
+		if (!do_eat(&philo, forks, megaphone))
+			return (sem_close(forks), sem_close(megaphone), NULL);
 		if (philo->n_ate == philo->to_eat)
-			return (NULL);
-		do_sleep(&philo);
+			return (sem_close(forks), sem_close(megaphone), NULL);
+		do_sleep(&philo, megaphone);
 	}
-	return (sem_close(sem), NULL);
+	return (sem_close(forks), sem_close(megaphone), NULL);
 }
 
-void	cutlery(t_philo *philos, int n)
+void	cutlery(t_philo *philos)
 {
-	pid_t	pid;
+	int	n;
 
+	n = -1;
 	while (++n < philos[0].n_phil)
 	{
 		philos[n].id = n;
-		pid = fork();
-		if (pid == 0)
+		philos[n].pids[n] = fork();
+		if (philos[n].pids[n] == 0)
+		{
 			processs_routine(&philos[n]);
-		else if (pid < 0)
+			freeee(philos);
+			exit(2);
+		}
+		else if (philos[n].pids[n] < 0)
 			perror("FAILED TO FORK IT UP\n");
 	}
 }
 
 int	main(int argc, char **argv)
 {
-	int		n;
 	t_philo	*philos;
 
 	init_philo(argc, argv, &philos);
 	if (philos[0].n_phil == 1)
-		alone(&philos);
-	sem_unlink(SNAME);
-	philos->sem = sem_open(SNAME, O_CREAT, 0644, philos->n_phil);
-	n = -1;
-	cutlery(philos, n);
-	n = -1;
-	while (++n < philos[0].n_phil)
 	{
-		waitpid(0, NULL, 0);
+		milisleep(philos[0].sleep);
+		printf("%-5d %-5s %-5s\n", philos[0].sleep, "1", "\e[0;31mhas died\e[0m");
+		freeee(philos);
+		exit(0);
 	}
-	return (free(philos->alive), sem_close(philos->sem),
-		free(philos), kill(0, SIGKILL));
+	sem_unlink(FORKS);
+	philos->forks = sem_open(FORKS, O_CREAT, 0644, philos->n_phil);
+	sem_unlink(MEGAPHONE);
+	philos->megaphone = sem_open(MEGAPHONE, O_CREAT, 0644, 1);
+	cutlery(philos);
+	wait(NULL);
+	abortion(philos);
+	freeee(philos);
+	return (0);
 }

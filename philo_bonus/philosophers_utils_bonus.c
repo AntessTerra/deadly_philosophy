@@ -6,7 +6,7 @@
 /*   By: jbartosi <jbartosi@student.42prague.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/15 15:46:22 by jbartosi          #+#    #+#             */
-/*   Updated: 2023/04/14 13:22:27 by jbartosi         ###   ########.fr       */
+/*   Updated: 2023/04/25 14:15:51 by jbartosi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ int	ft_atoi(const char *nptr)
 	return (base * sign);
 }
 
-void	init_others(t_philo **philos)
+void	init_others(t_philo **philos, pid_t **pids)
 {
 	int	i;
 	int	*alive;
@@ -74,23 +74,27 @@ void	init_others(t_philo **philos)
 		(*philos)[i].alive = alive;
 		(*philos)[i].init_sleep = 1;
 		(*philos)[i].n_ate = 0;
+		(*philos)[i].pids = *pids;
 		gettimeofday(&(*philos)[i].created_at, NULL);
 	}
 }
 
 void	init_philo(int argc, char **argv, t_philo **philos)
 {
+	pid_t	*pids;
+
 	if (argc < 5 || argc > 6)
 		return (printf("ERROR: Incorect number of arguments\n"), exit(1));
 	if (ft_atoi(argv[1]) < 1 || ft_atoi(argv[2]) < 0 || ft_atoi(argv[3]) < 0
 		|| ft_atoi(argv[4]) < 0)
 		return (printf("ERROR: Invalid argument\n"), exit(2));
-	*philos = malloc((ft_atoi(argv[1]) * sizeof(t_philo))
-			+ ft_atoi(argv[1]) * sizeof(int));
+	*philos = malloc((ft_atoi(argv[1]) * sizeof(t_philo)));
 	(*philos)[0].n_phil = ft_atoi(argv[1]);
 	(*philos)[0].die = ft_atoi(argv[2]);
 	(*philos)[0].eat = ft_atoi(argv[3]);
 	(*philos)[0].sleep = ft_atoi(argv[4]);
+	pids = malloc((ft_atoi(argv[1]) * sizeof(pid_t)));
+	(*philos)[0].pids = pids;
 	gettimeofday(&(*philos)[0].created_at, NULL);
 	if (argc == 6)
 	{
@@ -100,5 +104,5 @@ void	init_philo(int argc, char **argv, t_philo **philos)
 	}
 	else
 		(*philos)[0].to_eat = -1;
-	init_others(philos);
+	init_others(philos, &pids);
 }
